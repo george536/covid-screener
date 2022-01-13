@@ -44,7 +44,7 @@ learning_combos=[]
 
 '''
 def servo():
-    if choice=="c":
+    if choice=="s":
         combos=[]
         with open('combos.txt') as file:
             lines=file.readlines()
@@ -81,7 +81,7 @@ def servo():
             if not running:
                     move_to_initial()
                     break
-    elif choice=="s":
+    elif choice=="c":
         global waiting_time
         global same_arm_time
         global diff_arm_time
