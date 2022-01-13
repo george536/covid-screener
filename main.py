@@ -1,417 +1,469 @@
-#!/usr/bin/env python
 from tkinter import *
-from tkinter import ttk     #styles
-from tkinter import messagebox
-import webbrowser
+#from __future__ import division
 import sys
-import os
-import MySQLdb
-
-      
-connection = MySQLdb.connect(user='freedbtech_dscproject', password='dscdevice',host='freedb.tech',port=3306,database='freedbtech_Associatesdata')
-
-#import Temperature_Sensor
-
-
-average_temp=0
-def restart_program():   #After Exit button
-        python = sys.executable
-        os.execl(python, python, * sys.argv)
-
-def callback(url):       #open url fucntion
-        webbrowser.open_new(url)
-#Window 1
-def main():
-    connection.commit()
-    Selected_Ans1=0
-    Selected_Ans2=0
-    Selected_Ans3=0
-    win=Tk()
-    s=ttk.Style()
-    win.attributes('-fullscreen', True)
+import tkinter as tk
+import time
+#import Adafruit_PCA9685
+from threading import Thread
+import random
+import tkinter.scrolledtext as st
 
 
-    background_win1 = Canvas(win, bg="blue", height=250, width=300)
-    filename = PhotoImage(file ="/home/pi/Desktop/DSC Project/bg.png")
-    background_label = Label(win, image=filename)
-    background_label.place(x=0, y=0, relwidth=1, relheight=1)
-    background_win1.pack()
+'''
+pwm = Adafruit_PCA9685.PCA9685()
+pwm.set_pwm_freq(50)
+pulse=1935
+def move_to_initial():
+    #move to initial position
+    pulse=1935
+    pwm.set_pwm(0, pulse, 4096-pulse)
+    time.sleep(0.1)
+    pwm.set_pwm(1, pulse, 4096-pulse)
+    time.sleep(0.1)
+    pwm.set_pwm(2, pulse, 4096-pulse)
+    time.sleep(0.1)
+    pwm.set_pwm(3, pulse, 4096-pulse)
+    time.sleep(0.1)
+move_to_initial()  
+'''
 
-    win.title("Contacltless Self Scanning Device")
-    #Question 1
-    Q1=Label(win,text="Have you had any Covid-19 related symptoms\n :(dry cough, fever, tirdness)?",bg="white",font=("Arial",25))
-    Q1.place(x=130,y=50)
-    Ans1=IntVar()
-    Ans1.set(0)
-    Q1_Op1=Radiobutton(win,text="Yes", variable=Ans1,value=1,font=("Arial",25),fg="grey",bg="white")
-    Q1_Op1.place(x=100,y=150)
-    Q1_Op2=Radiobutton(win,text="No",variable=Ans1,value=2,font=("Arial",25),fg="grey",bg="white")
-    Q1_Op2.place(x=250,y=150)
+#global variables
 
-    #Question 2
-    Q2=Label(win,text="Have you been outside of Canada in\n the past 14 days?",bg="white",font=("Arial",25))
-    Q2.place(x=100,y=220)
-    Ans2=IntVar()
-    Ans2.set(0)
-    Q2_Op1=Radiobutton(win,text="Yes",variable=Ans2,value=1,font=("Arial",25),fg="grey",bg="white")
-    Q2_Op1.place(x=100,y=325)
-    Q2_Op2=Radiobutton(win,text="No", variable=Ans2,value=2,font=("Arial",25),fg="grey",bg="white")
-    Q2_Op2.place(x=250,y=325)
+choice=""
+speed=50
+t=0
+same_arm_time=1.15
+diff_arm_time=0.525
+waiting_time=0.4
+running=False
+seconds=0
+minutes=0
+begin=False
+enterd_combination=""
+learning_combos=[]
 
-    #Question 3
-    Q3=Label(win,text="Have you had any contact with a confirmed Covid-19 case,\n or caring for someone diagnosed with Covid-19?",bg="white",font=("Arial",25))
-    Q3.place(x=100,y=400)
-    Ans3=IntVar()
-    Ans3.set(0)
-    Q3_Op1=Radiobutton(win,text="Yes", variable=Ans3,value=1,font=("Arial",25),fg="grey",bg="white")
-    Q3_Op1.place(x=100,y=500)
-    Q3_Op2=Radiobutton(win,text="No", variable=Ans3,value=2,font=("Arial",25),fg="grey",bg="white")
-    Q3_Op2.place(x=250,y=500)
-
-
-    def evaluate():
-        global Selected_Ans1,Selected_Ans2,Selected_Ans3
-        Selected_Ans1=int(Ans1.get())
-        Selected_Ans2=int(Ans2.get())
-        Selected_Ans3=int(Ans3.get())
-        if Selected_Ans1!=0 and Selected_Ans2!=0 and Selected_Ans3!=0: 
-                win.destroy()
-        else:
-            messagebox.showerror( "Warning", "You have not answered all the questions yet!")    
-
-    button1=Button(win,text="Next", command=evaluate,font=("Raleway",40), bg="#D8D8D8", fg="#800000").place(x=850,y=500)
-
+'''
+def servo():
+    if choice=="c":
+        combos=[]
+        with open('combos.txt') as file:
+            lines=file.readlines()
+        
+        for line in lines:
+            combos.append(line)
+        
+        file.close()
     
-    win.mainloop()
-
-
-
-start=Tk()
-start.attributes('-fullscreen', True)
-
-background_win1 = Canvas(start, bg="blue", height=250, width=300)
-filename = PhotoImage(file ="/home/pi/Desktop/DSC Project/bg.png")
-background_label = Label(start, image=filename)
-background_label.place(x=0, y=0, relwidth=1, relheight=1)
-background_win1.pack()
-
-
-
-sql_select_Query1 = "select * from info"
-cursor = connection.cursor()
-cursor.execute(sql_select_Query1)
-records = cursor.fetchall()
-check_in_list=[]
-for row in records:
-        check_in=row[8].strip('}')
-        check_in_list.append(check_in)
-if "Warning" in check_in_list:
-        Label(start,text="Someone is suspected to have Covid-19,\n Please call a manager !",fg="red" ,bg="white",font=("Arial",35)).place(x=140,y=10)
-        messagebox.showwarning("Danger","Someone in the store is in danger and could be a risk for others, please call a manager!")
-
-
-
-
-start.title("Contacltless Self Scanning Device")
-Label(start,text="Hello !",bg="white",font=("Arial",50)).place(x=430,y=150)
-Label(start,text="Please scan the barcode on your badge to start screening",font=("Arial",25),bg="white").place(x=120,y=270)
-s= Entry(start,width=20,font=("Arial",25),show='*')
-s.place(x=330,y=350)
-s.focus_set()
-range1=0
-range2=4
-def see_data():
-        
-        #show who did and did not do their temp checks
-        scanner=s.get()
-        
-        admin_barcode=['002252082391']
-        
-            
-        if scanner in admin_barcode:
-
-            connection.commit()
-            sql_select_Query1 = "select * from info"
-            cursor = connection.cursor()
-            cursor.execute(sql_select_Query1)
-            records = cursor.fetchall()
-            check_done=[]
-            check_not_done=[]
-            temp_list=[]
-            for row in records:
-                id_num=row[0]
-                Firstname=row[1].strip('}')
-                Lastname=row[2].strip('}')
-                position=row[3].strip('}')
-                barcode=row[4].strip('}')
-                start_time=row[5].strip('}')
-                end_time=row[6].strip('}')
-                temp=(row[7],"C")
-                check_in=row[8].strip('}')
-
-                if check_in=="Done" or check_in=="Warning":
-                    temp_list.append(Firstname)
-                    temp_list.append(Lastname)
-                    temp_list.append(temp)
-                    temp_list.append(start_time)
-                    temp_list.append(end_time)
-                    temp_list.append(check_in)
-                    check_done.append(temp_list)
-                else:
-                    temp_list.append(Firstname)
-                    temp_list.append(Lastname)
-                    temp_list.append("0 C")
-                    temp_list.append(start_time)
-                    temp_list.append(end_time)
-                    temp_list.append("Not Done")
-                    check_not_done.append(temp_list)
-
-                temp_list=[]
-
-            #Display data Window
-                
-            admin_window=Toplevel(start)
-            admin_window.attributes('-fullscreen', True)
-            admin_window.configure(background='white')
-            def scroll(check_done,check_not_done,up_down):
-                    #Display the check_done list
-                    def list1(range1,range2,check_done):
-                            y_val=78
-                            for i in range(range1,range2):
-                                    x_val=0
-                                    for j in range(0,3):
-                                          e = Entry(admin_window, bg="white",font=("Arial",20),bd=2)
-                                          e.grid(row=i,column=j)
-                                          e.insert(END,check_done[i][j])
-                                          e.place(x=x_val,y=y_val)
-                                          x_val+=120
-                                    x_val=0
-                                    y_val+=40
-                                    for k in range(3,6):
-                                          e = Entry(admin_window, bg="white",font=("Arial",20),bd=2)
-                                          e.grid(row=i,column=k)
-                                          e.insert(END,check_done[i][k])
-                                          e.place(x=x_val,y=y_val)
-                                          x_val+=120
-                                    y_val+=40
-                    def list2(range1,range2,check_not_done):
-                    #Display the check_not_done list
-                            y_val=78
-                            for i in range(range1,range2):
-                                    x_val=550
-                                    for j in range(0,3):
-                                          e = Entry(admin_window, bg="white",font=("Arial",20),bd=2)
-                                          e.grid(row=i,column=j)
-                                          e.insert(END,check_not_done[i][j])
-                                          e.place(x=x_val,y=y_val)
-                                          
-                                          x_val+=120
-                                    x_val=550
-                                    y_val+=40
-                                    for k in range(3,6):
-                                          e = Entry(admin_window, bg="white",font=("Arial",20),bd=2)
-                                          e.grid(row=i,column=k)
-                                          e.insert(END,check_not_done[i][k])
-                                          e.place(x=x_val,y=y_val)
-                                          x_val+=120
-                                    y_val+=40
-                                    
-                    global range1,range2
-                    if up_down=="up":
-                            
-                            range1=0
-                            range2=4
-                    if up_down==True: 
-                            if range2<=len(check_done):
-                                    if (range2+1)>len(check_done):
-                                            x=(range2 +1)-len(check_done)
-                                            for i in range(x):
-                                                    new_row=["  ", "  ","  ","  ","  ","  "]
-                                                    check_done.append(new_row)
-                                            
-                                    range1+=1
-                                    range2+=1
-                                    
-                                    list1(range1,range2,check_done)
-                                    
-                            if range2<=len(check_not_done):
-                                    if (range2+1)>len(check_not_done):
-                                            x=(range2 +1)-len(check_not_done)
-                                            for i in range(x):
-                                                    new_row=["  ", "  ","  ","  ","  ","  "]
-                                                    check_not_done.append(new_row)
-                                            
-                                    range1+=1
-                                    range2+=1
-                                    list2(range1,range2,check_not_done)
-                            
-                                            
+        choices=random.choices(combos,k=len(combos))
+        previous=0
+        global waiting_time
+        global same_arm_time
+        global diff_arm_time
+        global running
+        while True:
+            for moves in choices:
+                moves=moves.strip("\n")
+                channels=moves.split(",")
+                for i in channels:
+                    if i==previous:
+                        time.sleep(same_arm_time)
                     else:
-                                  
-                          try:               
-                                  list1(0,4,check_done)
-                                  
-                          except IndexError:
-                                  pass
-                          try:
-                                  list2(0,4,check_not_done)
-                          except IndexError:
-                                  pass
-                          Button(admin_window,text="Go Back", command=restart_program,font=("Raleway",30),width=11,height=1, bg="#D8D8D8", fg="#800000").place(x=0,y=0)
+                        time.sleep(diff_arm_time)
+                    if not running:
+                        break
+                    pwm.set_pwm(int(i)-1, 2000, 4096-2000)
+                    time.sleep(waiting_time)
+                    pwm.set_pwm(int(i)-1, pulse, 4096-pulse)
+                    previous=i
+                if not running:
+                    move_to_initial()
+                    break
+            if not running:
+                    move_to_initial()
+                    break
+    elif choice=="s":
+        global waiting_time
+        global same_arm_time
+        global diff_arm_time
+        global running
+        global learning_combos
+        previous=0
+        while True:
+            for moves in learning_combos:
+                for i in channels:
+                    if i==previous:
+                        time.sleep(same_arm_time)
+                    else:
+                        time.sleep(diff_arm_time)
+                    if not running:
+                        break
+                    pwm.set_pwm(int(i)-1, 2000, 4096-2000)
+                    time.sleep(waiting_time)
+                    pwm.set_pwm(int(i)-1, pulse, 4096-pulse)
+                    previous=i
+                if not running:
+                    move_to_initial()
+                    break
+            if not running:
+                    move_to_initial()
+                    break
+                
+'''
 
-            scroll(check_done,check_not_done," ")            
-            def clear_warnings():
-                    connection.commit()
-                    update="UPDATE info SET check_in='Done' WHERE check_in='Warning'"
-                    cursor = connection.cursor()
-                    cursor.execute(update)
-                    connection.commit()
-                    
-            Button(admin_window,text="Go Up", command=lambda: scroll(check_done,check_not_done,"up"),font=("Raleway",30), bg="#D8D8D8", fg="#800000").place(x=475,y=0)
-            Button(admin_window,text="Down", command=lambda: scroll(check_done,check_not_done,True),font=("Raleway",30), bg="#D8D8D8", fg="#800000").place(x=325,y=0)
-            Button(admin_window,text="Clear Warnings", command=clear_warnings,font=("Raleway",30), bg="#D8D8D8", fg="#800000").place(x=650,y=0)
-            Button(admin_window,text="Go Back", command=restart_program,font=("Raleway",30),width=11,height=1, bg="#D8D8D8", fg="#800000").place(x=0,y=0)
-        else:
-            messagebox.showerror( "Warning", "You are not an athorized personnel")
-             
-        
-Button(start,text="Manager login",font=("Raleway",30), bg="#D8D8D8", fg="#800000", command=see_data).place(x=100,y=510)
-
-def start_():
-        global scanner
-        scanner=s.get()
-
-        s.delete(0, END)
-        
-        sql_select_Query2 = "select * from Associates"
-        cursor = connection.cursor()
-        cursor.execute(sql_select_Query2)
-        records = cursor.fetchall()
-        barcodes=[]
-        for row in records:
-                barcode=row[4]
-                barcodes.append(barcode)
-        if scanner in barcodes:
-                    
-                start.destroy()
-                main()
-        else:
-                messagebox.showerror( "Warning", "please scan a valid badge")
-                    
-Button(start,text="Next",font=("Raleway",40), bg="#D8D8D8", fg="#800000",command=start_).place(x=850,y=500)
+# shutdown the gui
+def shutdown():
+    sys.exit();
+    #pass
 
 
-start.mainloop()
-
-        
-def warning(average_temp):           #warning window
-    connection.commit()
-    
-    Label(win2,text="Return Home Immedietly !\n\n It is not safe for you to work,\n it is important that you self isolate\n and seek testing.\n\n Please review the Covid-19\n guidlines on Ontario.ca",bg="white",font=("Arial",30)).place(x=250,y=100)
-    
-    def scan_update():
-
-            global scanner
-                    
-            connection.commit()
-            update="UPDATE info SET temp=%(average_temp)s, check_in='Warning' WHERE barcode_num=%(scanner)s"
-            cursor = connection.cursor()
-            cursor.execute(update,{ 'average_temp': average_temp, 'scanner': scanner })
-            connection.commit()
-            restart_program()
-            
-    
-            
-    button2=Button(win2,text="Exit", font=("Raleway",40), bg="#D8D8D8", fg="#800000",command=lambda:[scan_update()]).place(x=850,y=500)
+def press_spar():
+    global choice
+    choice="s"
+    main_page.pack_forget()
+    page2.pack()
 
 
-#Window 2
-win2=Tk()
-win2.attributes('-fullscreen', True)
-win2.title("Contacltless Self Scanning Device")
+def press_combo():
+    global choice
+    choice="c"
+    main_page.pack_forget()
+    page5.pack()
 
-background_win1 = Canvas(win2, bg="blue", height=250, width=300)
-filename = PhotoImage(file = "/home/pi/Desktop/DSC Project/bg.png")
-background_label = Label(win2, image=filename)
-background_label.place(x=0, y=0, relwidth=1, relheight=1)
-background_win1.pack()
 
-if Selected_Ans1==2 and Selected_Ans2==2 and Selected_Ans3==2: 
-    label=Label(win2,text="Please be within 10cm range\n away from the sensor",font=("Arial",30),bg="white")
-    label.place(x=250,y=270)
-    def next():
-        win2.destroy()
+def increase_speed():
+    global speed
+    global same_arm_time
+    global diff_arm_time
+    global waiting_time
+    if speed <= 90:
+        waiting_time -= 0.022
+        same_arm_time -= 0.185
+        diff_arm_time -= 0.105
+        speed += 10
+    speed_label.config(text=str(speed) + "%")
 
-    #average=Temperature_Sensor.run_sensor()
 
-    average_temp=36  #test
+def decrease_speed():
+    global speed
+    global same_arm_time
+    global diff_arm_time
+    global waiting_time
+    if speed > 10:
+        waiting_time += 0.022
+        same_arm_time += 0.185
+        diff_arm_time += 0.105
+        speed -= 10
+    speed_label.config(text=str(speed) + "%")
 
-    if average_temp>=36 and average_temp<38:
-        button3=Button(win2,text="Next", command=next,font=("Raleway",40), bg="#D8D8D8", fg="#800000").place(x=850,y=500)
-        #we could update the temps in thr database later
-        pass_=True
+
+def select_speed():
+    page2.pack_forget()
+    page3.pack()
+
+
+def go_home():
+    global t
+    global running
+    global seconds
+    global speed
+    global begin
+    begin=False
+    t = 0
+    speed = 50
+    seconds = 0
+    running = False
+    speed_label.config(text="50%")
+    reset()
+    page2.pack_forget()
+    page3.pack_forget()
+    page4.pack_forget()
+    page5.pack_forget()
+    main_page.pack()
+
+
+def set_timer():
+    global t
+    global speed
+    t = v.get()
+    page3.pack_forget()
+    page4.pack()
+    page4.speed_label.config(text="Speed: " + str(speed) + "%")
+
+
+
+
+def update():
+    global seconds
+    global minutes
+    global running
+    global begin
+    global t
+    if not begin:
+        begin=True
     else:
-        label.destroy()
-        messagebox.showinfo( "Warning", "Your temperature is too high, Please go home and let a manager be aware of this !")
-        warning(average_temp)
+        time.sleep(1)
+    if seconds == 60:
+        seconds = 0
+        minutes += 1
+    minutes_string = f'{minutes}' if minutes > 9 else f'0{minutes}'
+    seconds_string = f'{seconds}' if seconds > 9 else f'0{seconds}'
+    page4.stopwatch_label.config(text=minutes_string + ':' + seconds_string)
+    if running and int(minutes_string) != t:
+        seconds += 1
+        
+        update()
+    elif int(minutes_string)==t:
+        time.sleep(2)
+        seconds=0
+        minutes=0
+        begin=False
+        start_button.place(x=140, y=180)
+        running = False
+    elif running==False:
+        start_button.place(x=140, y=180)
+        running = False
 
-elif Selected_Ans1!=0 and Selected_Ans2!=0 and Selected_Ans3!=0:
-    messagebox.showinfo( "Warning", "You are not allowed to start you shift, Please contact your manager !")
-    warning(average_temp)
+def start():
+    global running
+    if not running:
+        running = True
+        start_button.place_forget()
+        pause_button.place(x=400, y=180)
+        if __name__ == '__main__':
+            #a=Thread(target=servo)
+            b = Thread(target=update)
+            #a.start()
+            b.start()
 
-win2.mainloop()
+def pause():
+    global running
+    global seconds
+    global begin
+    if running:
+        start_button.place(x=140, y=180)
+        pause_button.place_forget()
+        begin=False
+        seconds-=1
+        running = False
 
+def reset():
+    global running
+    running=False
+    # set variables back to zero
+    global minutes
+    global seconds
+    minutes = 0
+    seconds = 0
+    # set label back to zero
+    page4.stopwatch_label.config(text="00:00")
 
-#Window 3 based on %pass_ 
-if pass_==True:
-    win3=Tk()
-    win3.attributes('-fullscreen', True)
-    win3.title("Contacltless Self Scanning Device")
-    background_win1 = Canvas(win3, bg="blue", height=250, width=300)
-    filename = PhotoImage(file = "/home/pi/Desktop/DSC Project/bg.png")
-    background_label = Label(win3, image=filename)
-    background_label.place(x=0, y=0, relwidth=1, relheight=1)
-    background_win1.pack()
+def one_clicked():
+    global enterd_combination
+    enterd_combination+="1"
 
-    global scanner
-
-
-    try:
-        connection.commit()
-        #Getting values from table of the day 
-        sql_select_Query = "select * from info where barcode_num=%(scanner)s"
-        cursor = connection.cursor()
-        cursor.execute(sql_select_Query,{ 'scanner': scanner })
-        records = cursor.fetchall()
-        for row in records:
-            id_num=row[0]
-            Firstname=row[1].strip('}')
-            Lastname=row[2].strip('}')
-            position=row[3].strip('}')
-            barcode=row[4].strip('}')
-            start_time=row[5].strip('}')
-            end_time=row[6].strip('}')
-
-        def update_data():      #update the temp and check_in into table
-            update="UPDATE info SET temp=%(average_temp)s, check_in='Done' WHERE barcode_num=%(scanner)s"
-            cursor = connection.cursor()
-            cursor.execute(update,{ 'average_temp': average_temp, 'scanner': scanner })
-            connection.commit()
-            restart_program()
-
-        lbl2=Label(win3,text="Please click on your shift to confirm !",font=("Arial",30),bg="white")
-        lbl2.place(x=180,y=200)
-        Label(win3,text=(Firstname + ' '+ Lastname+ '\n'+ position),font=("Raleway",25), bg="white", fg="#800000").place(x=500,y=330, anchor="center")
-        but=('Shift: '+ start_time+ ' To '+ end_time)
-        button4=Button(win3,text=(but), command=update_data,font=("Raleway",25), bg="#D8D8D8", fg="#800000").place(x=285,y=480)
-
-    except NameError:
-        Label(win3,text="Nothing matches the barcode scanned,\n no shift for you today",font=("Arial",30),bg="white").place(x=180,y=270)
-        lbl2.destroy()
-        Button(win3,text="Exit", command=restart_program,font=("Raleway",40), bg="#D8D8D8", fg="#800000").place(x=850,y=500)
-    
-    win3.mainloop()
+def two_clicked():
+    global enterd_combination
+    enterd_combination+="2"
 
 
+def three_clicked():
+    global enterd_combination
+    enterd_combination+="3"
 
-connection.close()
+
+def four_clicked():
+    global enterd_combination
+    enterd_combination+="4"
+
+
+def enter_clicked():
+    global enterd_combination
+    global learning_combos
+    learning_combos.append(int(enterd_combination))
+    combos_selected.insert(tk.INSERT,enterd_combination+ ", ")
+    enterd_combination=""
+
+
+
+master = tk.Tk()
+main_page = tk.Frame(master)
+page2 = tk.Frame(master)
+page3 = tk.Frame(master)
+page4 = tk.Frame(master)
+page5 = tk.Frame(master)
+
+#--------------------------------------------page1, select mode---------------------------------------------------------
+canvas = Canvas(main_page, width=728, height=455)
+canvas.pack(fill="both", expand=True)
+
+img_background = PhotoImage(file=r'Picture/new.png')
+canvas.create_image(0, 0, anchor="nw", image=img_background)
+
+img_name = PhotoImage(file=r'Picture/name.png')
+canvas.create_image(40, 40, anchor="nw", image=img_name)
+
+myFont = ("Roboto", 30, "bold")
+
+img_mode =PhotoImage(file=r'Picture/select_mode.png')
+canvas.create_image(150, 160, anchor="nw", image=img_mode)
+
+# button that brings the user to the speed page
+spar = Button(main_page, text="Combo", command=lambda: press_combo(), width=8, bg='#357EC7', fg='#ffffff')
+
+combo = Button(main_page, text="Spar", command=lambda: press_spar(), width=8, bg='#357EC7', fg='#ffffff')
+
+# button to shutdown the raspbery pi
+img_quit = PhotoImage(file=r'Picture/button_shut-down (4).png')
+main_page.img_quit = img_quit
+quit = Button(main_page, image=img_quit, command=lambda: shutdown(), borderwidth=0)
+quit.place(x=150, y=350)
+
+
+# modfies the font of the button
+combo['font'] = myFont
+spar['font'] = myFont
+
+# adjusts the position of the buttons
+spar.place(x=100, y=240)
+combo.place(x=450, y=240)
+
+main_page.pack()
+
+#-----------------------------------------second page choose speed increment--------------------------------------------
+img_background2=PhotoImage(file=r'Picture/bg_timer.png')
+myFont = ("Roboto", 25, "bold")
+myFont_speed= ("Roboto",50, "bold")
+canvas2 = Canvas(page2, width=728, height=455)
+canvas2.pack(fill="both", expand=True)
+canvas2.create_image(0, 0, anchor="nw", image=img_background2)
+canvas2.create_image(40, 40, anchor="nw", image=img_name)
+img_speed = PhotoImage(file=r'Picture/speed2 (1).png')
+canvas2.create_image(160, 140, anchor="nw", image=img_speed)
+
+
+img_home = PhotoImage(file=r'Picture/button_start-over (1).png')
+page2.img_home= img_home
+home = Button(page2, image=img_home, command=lambda: go_home(), borderwidth=0)
+home.place(x=150, y=350)
+
+decrease = Button(page2, text="Decrease", command=lambda: decrease_speed(), width=8, bg='#357EC7', fg='#ffffff')
+increase = Button(page2, text="Increase", command=lambda: increase_speed(), width=8, bg='#357EC7', fg='#ffffff')
+speed_label = Label(page2, text=str(speed) + "%", width=4,fg='#1545d4', bg='#000000')
+select_speed_button = Button(page2, text="Set Speed", command=lambda: select_speed(), width=8, bg='#357EC7',
+                             fg='#ffffff')
+
+decrease['font'] = myFont
+increase['font'] = myFont
+speed_label['font'] = myFont_speed
+select_speed_button['font'] = myFont
+# adjusts the position of the buttons
+decrease.place(x=40, y=230)
+increase.place(x=280, y=230)
+speed_label.place(x=410, y=125)
+select_speed_button.place(x=510, y=230)
+
+
+
+# ---------------------------------------------Third page (set time)-----------------------------------------------------
+myFont = ("Roboto", 25, "bold")
+canvas3 = Canvas(page3, width=728, height=455)
+canvas3.pack(fill="both", expand=True)
+canvas3.create_image(0, 0, anchor="nw", image=img_background2)
+canvas3.create_image(40, 40, anchor="nw", image=img_name)
+
+home2 = Button(page3, image=img_home, command=lambda: go_home(), borderwidth=0)
+home2.place(x=150, y=350)
+
+v = DoubleVar()
+
+
+myFont_time = ("Roboto", 18, "bold")
+select_time = Label(page3, text="Selected Time: 1 minute(s)",width=20,bg='#000000', fg='#ffffff')
+select_time['font'] = myFont_time
+select_time.place(x=230, y=120)
+
+def cmd(v):
+    select_time.config(text="Selected Time: " + str(v) + " minute(s)")
+
+
+myFont_timer = ("Roboto", 15, "bold")
+timer=Scale(page3,variable = v, from_=1 , to=6,tickinterval=1, command=cmd,orient=HORIZONTAL,
+            fg="black",bg="#DC143C",troughcolor="#F08080",width=40, length=600)
+timer['font']=myFont_timer
+timer.place(x=60,y=160)
+
+myFont = ("Roboto", 25, "bold")
+set_time = Button(page3, text="Set Time", command=lambda: set_timer(), width=8, bg='#357EC7', fg='#ffffff')
+set_time['font'] = myFont
+# adjusts the position of the buttons
+set_time.place(x=280, y=270)
+
+# ------------------------------------------------Fourth page (timer, start motors)----------------------------------------
+myFont = ("Roboto", 25)
+canvas4 = Canvas(page4, width=728, height=455)
+canvas4.pack(fill="both", expand=True)
+canvas4.create_image(0, 0, anchor="nw", image=img_background2)
+
+home2 = Button(page4, image=img_home, command=lambda: go_home(), borderwidth=0)
+home2.pack(pady=30)
+home2.place(x=130, y=350)
+
+myFont = ("Roboto", 33)
+page4.stopwatch_label = Label(page4, text='00:00', font=("Roboto", 80))
+page4.stopwatch_label.place(x=220, y=50)
+page4.stopwatch_label.config(background='black')
+page4.stopwatch_label.config(foreground='white')
+
+'''
+page4.time_label = Label(page4, text=str(t) + "minutes", font=("Roboto", 40))
+page4.time_label.place(x=50, y=300)
+'''
+
+l_font=("Roboto", 30, 'bold')
+page4.speed_label = Label(page4, text="Speed: " + str(speed) + "%", font=l_font, bg="black", fg="red")
+page4.speed_label.place(x=230, y=10)
+
+img_start = PhotoImage(file=r'Picture/start.png')
+page4.img_start = img_start
+start_button = Button(page4, image=img_start, command=lambda: start(), borderwidth=0)
+start_button.place(x=140, y=180)
+
+
+
+img_pasue = PhotoImage(file=r'Picture/pause (1).png')
+page4.img_pasue = img_pasue
+pause_button = Button(page4, image=img_pasue, command=lambda: pause(), borderwidth=0)
+
+# ------------------------------------------------Fifth page (Spar Mode)----------------------------------------
+myFont = ("Roboto", 20)
+canvas5 = Canvas(page5, width=728, height=455)
+canvas5.pack(fill="both", expand=True)
+canvas5.create_image(0, 0, anchor="nw", image=img_background2)
+canvas5.create_image(40, 40, anchor="nw", image=img_name)
+
+home3 = Button(page5, image=img_home, command=lambda: go_home(), borderwidth=0)
+home3.place(x=150, y=350)
+
+one = Button(page5, text="1", command=lambda: one_clicked(), width=5, bg='#357EC7', fg='#ffffff')
+two = Button(page5, text="2", command=lambda: two_clicked(), width=5, bg='#357EC7', fg='#ffffff')
+three = Button(page5, text="3", command=lambda: three_clicked(), width=5, bg='#357EC7', fg='#ffffff')
+four = Button(page5, text="4", command=lambda: four_clicked(), width=5, bg='#357EC7', fg='#ffffff')
+enter = Button(page5, text="Enter", command=lambda: enter_clicked(), width=7, bg='#357EC7', fg='#ffffff')
+one['font'] = myFont
+two['font'] = myFont
+three['font'] = myFont
+four['font'] = myFont
+enter['font'] = myFont
+one.place(x=480,y=130)
+two.place(x=600,y=130)
+three.place(x=480,y=200)
+four.place(x=600,y=200)
+enter.place(x=520,y=270)
+
+
+combos_selected= st.ScrolledText(page5,width=20,height=5,font=("Roboto",25),bg="black", fg="red")
+combos_selected.place(x=50, y=130)
+combos_selected.insert(tk.INSERT,"Combos Selected: ")
+
+#run program
+mainloop()
