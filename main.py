@@ -1,5 +1,5 @@
-from tkinter import *
 #from __future__ import division
+from tkinter import *
 import sys
 import tkinter as tk
 import time
@@ -44,6 +44,11 @@ learning_combos=[]
 
 '''
 def servo():
+    global waiting_time
+    global same_arm_time
+    global diff_arm_time
+    global running
+    global learning_combos
     if choice=="s":
         combos=[]
         with open('combos.txt') as file:
@@ -56,10 +61,6 @@ def servo():
     
         choices=random.choices(combos,k=len(combos))
         previous=0
-        global waiting_time
-        global same_arm_time
-        global diff_arm_time
-        global running
         while True:
             for moves in choices:
                 moves=moves.strip("\n")
@@ -82,11 +83,6 @@ def servo():
                     move_to_initial()
                     break
     elif choice=="c":
-        global waiting_time
-        global same_arm_time
-        global diff_arm_time
-        global running
-        global learning_combos
         previous=0
         while True:
             for moves in learning_combos:
